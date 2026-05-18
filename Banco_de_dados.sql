@@ -5,10 +5,11 @@ USE rr_maxx;
 
 -- TABELA: usuarios
 CREATE TABLE usuarios (
-    id_usuarios INT AUTO_INCREMENT PRIMARY KEY,
+    id_usuarios BIGINT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL UNIQUE,
     login VARCHAR(50) NOT NULL UNIQUE,
-    email_usuario VARCHAR(50),
-    senha VARCHAR(12) NOT NULL,
+    senha VARCHAR(255) NOT NULL,
     perfil ENUM('admin', 'mecanico') NOT NULL,
     ativo TINYINT(1) NOT NULL DEFAULT 1,
     data_criacao DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -16,20 +17,27 @@ CREATE TABLE usuarios (
 
 -- TABELA: clientes
 CREATE TABLE clientes (
-    id_clientes INT AUTO_INCREMENT PRIMARY KEY,
+    id_clientes BIGINT AUTO_INCREMENT PRIMARY KEY,
     nome_usuario VARCHAR(50) NOT NULL,
     dt_nascimento DATE,
     telefone VARCHAR(11),
     email_usuario VARCHAR(100),
-    endereco VARCHAR(100),
+    endereco VARCHAR(255),
+    cep VARCHAR(8),
+    logradouro VARCHAR(120),
+    numero VARCHAR(10),
+    complemento VARCHAR(60),
+    bairro VARCHAR(80),
+    cidade VARCHAR(80),
+    estado CHAR(2),
     data_cadastro DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     ativo TINYINT(1) NOT NULL DEFAULT 1
 );
 
 -- TABELA: veiculos
 CREATE TABLE veiculos (
-    id_veiculos INT AUTO_INCREMENT PRIMARY KEY,
-    cliente_id INT NOT NULL,
+    id_veiculos BIGINT AUTO_INCREMENT PRIMARY KEY,
+    cliente_id BIGINT NOT NULL,
     placa VARCHAR(10) NOT NULL UNIQUE,
     modelo VARCHAR(50) NOT NULL,
     marca VARCHAR(50) NOT NULL,
@@ -46,10 +54,10 @@ CREATE TABLE veiculos (
 
 -- TABELA: ordens_servico
 CREATE TABLE ordens_servico (
-    id_ordens_servico INT AUTO_INCREMENT PRIMARY KEY,
-    cliente_id INT NOT NULL,
-    veiculo_id INT NOT NULL,
-    usuario_id INT,
+    id_ordens_servico BIGINT AUTO_INCREMENT PRIMARY KEY,
+    cliente_id BIGINT NOT NULL,
+    veiculo_id BIGINT NOT NULL,
+    usuario_id BIGINT,
     data_abertura DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     data_fechamento DATETIME NULL,
     status ENUM(
@@ -83,8 +91,8 @@ CREATE TABLE ordens_servico (
 
 -- TABELA: servicos_realizados
 CREATE TABLE servicos_realizados (
-    id_servicos_realizados INT AUTO_INCREMENT PRIMARY KEY,
-    ordem_servico_id INT NOT NULL,
+    id_servicos_realizados BIGINT AUTO_INCREMENT PRIMARY KEY,
+    ordem_servico_id BIGINT NOT NULL,
     nome_servico VARCHAR(100) NOT NULL,
     descricao TEXT,
     tipo_servico ENUM('preventiva', 'corretiva') NOT NULL DEFAULT 'corretiva',
@@ -98,8 +106,8 @@ CREATE TABLE servicos_realizados (
 
 -- TABELA: garantias
 CREATE TABLE garantias (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    servico_id INT NOT NULL,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    servico_id BIGINT NOT NULL,
     data_inicio DATETIME NOT NULL,
     data_fim DATETIME GENERATED ALWAYS AS (DATE_ADD(data_inicio, INTERVAL 3 MONTH)) STORED,
     status ENUM('ativa', 'encerrada', 'cancelada') NOT NULL DEFAULT 'ativa',
@@ -112,10 +120,10 @@ CREATE TABLE garantias (
 
 -- TABELA: notificacoes
 CREATE TABLE notificacoes (
-    id_notificacoes INT AUTO_INCREMENT PRIMARY KEY,
-    cliente_id INT NOT NULL,
-    veiculo_id INT NULL,
-    ordem_servico_id INT NULL,
+    id_notificacoes BIGINT AUTO_INCREMENT PRIMARY KEY,
+    cliente_id BIGINT NOT NULL,
+    veiculo_id BIGINT NULL,
+    ordem_servico_id BIGINT NULL,
     tipo ENUM(
         'pos_servico',
         'aniversario',

@@ -3,6 +3,7 @@ DROP DATABASE IF EXISTS rr_maxx;
 CREATE DATABASE IF NOT EXISTS rr_maxx;
 USE rr_maxx;
 
+
 -- TABELA: usuarios
 CREATE TABLE usuarios (
     id_usuarios BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -14,15 +15,23 @@ CREATE TABLE usuarios (
     ativo TINYINT(1) NOT NULL DEFAULT 1,
     data_criacao DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-
 -- TABELA: clientes
 CREATE TABLE clientes (
     id_clientes BIGINT AUTO_INCREMENT PRIMARY KEY,
     nome_usuario VARCHAR(50) NOT NULL,
+    cpf VARCHAR(11) NOT NULL,
     dt_nascimento DATE,
     telefone VARCHAR(11),
     email_usuario VARCHAR(100),
-    endereco VARCHAR(255),
+    data_cadastro DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    ativo TINYINT(1) NOT NULL DEFAULT 1
+);
+
+
+-- TABELA: enderecos
+CREATE TABLE enderecos (
+    id_endereco BIGINT AUTO_INCREMENT PRIMARY KEY,
+    cliente_id BIGINT NOT NULL,
     cep VARCHAR(8),
     logradouro VARCHAR(120),
     numero VARCHAR(10),
@@ -30,10 +39,14 @@ CREATE TABLE clientes (
     bairro VARCHAR(80),
     cidade VARCHAR(80),
     estado CHAR(2),
-    data_cadastro DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    ativo TINYINT(1) NOT NULL DEFAULT 1
+    data_criacao DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_endereco_cliente
+        FOREIGN KEY (cliente_id) REFERENCES clientes(id_clientes)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
 );
 
+-- TABELA: veiculos
 -- TABELA: veiculos
 CREATE TABLE veiculos (
     id_veiculos BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -43,7 +56,14 @@ CREATE TABLE veiculos (
     marca VARCHAR(50) NOT NULL,
     ano INT,
     quilometragem INT,
-    tipo_combustivel ENUM('gasolina', 'etanol', 'flex') NOT NULL,
+    tipo_combustivel ENUM(
+        'gasolina',
+        'etanol',
+        'flex',
+        'diesel',
+        'hibrido',
+        'eletrico'
+    ) NOT NULL,
     ativo TINYINT(1) NOT NULL DEFAULT 1,
     data_criacao DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_veiculo_cliente
@@ -52,7 +72,7 @@ CREATE TABLE veiculos (
         ON UPDATE CASCADE
 );
 
--- TABELA: ordens_servico
+-- TABELA: ordens_servico (ajustada)
 CREATE TABLE ordens_servico (
     id_ordens_servico BIGINT AUTO_INCREMENT PRIMARY KEY,
     cliente_id BIGINT NOT NULL,
@@ -60,6 +80,7 @@ CREATE TABLE ordens_servico (
     usuario_id BIGINT,
     data_abertura DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     data_fechamento DATETIME NULL,
+    proxima_revisao DATE NULL,
     status ENUM(
         'aberta',
         'em_andamento',
@@ -68,12 +89,11 @@ CREATE TABLE ordens_servico (
         'finalizada',
         'cancelada'
     ) NOT NULL DEFAULT 'aberta',
-    problema_relatado TEXT,
-    diagnostico TEXT,
     quilometragem INT,
     valor_estimado DECIMAL(10,2) DEFAULT 0.00,
     valor_total DECIMAL(10,2) DEFAULT 0.00,
-    forma_pagamento VARCHAR(50),
+    garantia ENUM('sem_garantia', '3_meses', '6_meses', '12_meses')
+        NOT NULL DEFAULT 'sem_garantia',
     observacoes TEXT,
     CONSTRAINT fk_os_cliente
         FOREIGN KEY (cliente_id) REFERENCES clientes(id_clientes)
@@ -89,7 +109,9 @@ CREATE TABLE ordens_servico (
         ON UPDATE CASCADE
 );
 
--- TABELA: servicos_realizados
+
+
+-- TABELA: servicos_realizados 
 CREATE TABLE servicos_realizados (
     id_servicos_realizados BIGINT AUTO_INCREMENT PRIMARY KEY,
     ordem_servico_id BIGINT NOT NULL,
@@ -104,19 +126,8 @@ CREATE TABLE servicos_realizados (
         ON UPDATE CASCADE
 );
 
--- TABELA: garantias
-CREATE TABLE garantias (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    servico_id BIGINT NOT NULL,
-    data_inicio DATETIME NOT NULL,
-    data_fim DATETIME GENERATED ALWAYS AS (DATE_ADD(data_inicio, INTERVAL 3 MONTH)) STORED,
-    status ENUM('ativa', 'encerrada', 'cancelada') NOT NULL DEFAULT 'ativa',
-    data_criacao DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_garantia_servico
-        FOREIGN KEY (servico_id) REFERENCES servicos_realizados(id_servicos_realizados)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
-);
+
+
 
 -- TABELA: notificacoes
 CREATE TABLE notificacoes (
